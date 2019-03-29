@@ -1,0 +1,122 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: 'SAM template for Serverless framework service: '
+Resources:
+  EquipmentTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: Equipment
+      AttributeDefinitions:
+        - AttributeName: EquipmentNumber
+          AttributeType: S
+      KeySchema:
+        - AttributeName: EquipmentNumber
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+  ApiGatewayStage:
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      MethodSettings:
+        - DataTraceEnabled: true
+          HttpMethod: '*'
+          LoggingLevel: INFO
+          ResourcePath: /*
+          MetricsEnabled: true
+  GetEquipment:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: com.serverless.handler.GetEquipmentHandler
+      Runtime: java8
+      CodeUri: target/serverless-equipment-api-dev.jar
+      MemorySize: 128
+      Timeout: 30
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'dynamodb:*'
+              Resource: 'arn:aws:dynamodb:eu-west-1:*:table/*'
+      Environment:
+        Variables:
+          ENDPOINT: 'http://localhost:8000'
+          REGION: eu-west-1
+          TABLE: Equipment
+      Events:
+        Event1:
+          Type: Api
+          Properties:
+            Path: '/equipment/{id}'
+            Method: get
+            RestApiId:
+              Ref: ServerlessEquipmentApi
+  ServerlessEquipmentApi:
+    Type: 'AWS::Serverless::Api'
+    Properties:
+      StageName: dev
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title:
+            Ref: 'AWS::StackName'
+        paths:
+          '/equipment/{id}':
+            options:
+              x-amazon-apigateway-integration:
+                type: mock
+                requestTemplates:
+                  application/json: '{ "statusCode" : 200 }'
+                responses:
+                  default:
+                    statusCode: 200
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+                      method.response.header.Access-Control-Allow-Methods: '''get'''
+                      method.response.header.Access-Control-Allow-Origin: '''*'''
+                    responseTemplates:
+                      application/json: '{}'
+              responses:
+                '200':
+                  headers:
+                    Access-Control-Allow-Headers:
+                      type: string
+                    Access-Control-Allow-Methods:
+                      type: string
+                    Access-Control-Allow-Origin:
+                      type: string
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  'Fn::Sub': >-
+                    arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetEquipment.Arn}/invocations
+                responses:
+                  default:
+                    statusCode: 200
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+                      method.response.header.Access-Control-Allow-Methods: '''get'''
+                      method.response.header.Access-Control-Allow-Origin: '''*'''
+                    responseTemplates:
+                      application/json: '{}'
+              responses:
+                '200':
+                  headers:
+                    Access-Control-Allow-Headers:
+                      type: string
+                    Access-Control-Allow-Methods:
+                      type: string
+                    Access-Control-Allow-Origin:
+                      type: string
+  GetEquipmentLambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    DependsOn:
+      - GetEquipment
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: GetEquipment
+      Principal: apigateway.amazonaws.com

@@ -1,0 +1,64 @@
+service: serverless-equipment-api
+
+provider:
+  name: aws
+  runtime: java8
+  stage: dev
+  region: eu-west-1
+  deploymentBucket: arttu-serverless-equipment-api
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+      - "dynamodb:*"
+      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/*"
+  environment:
+    ENDPOINT: "http://localhost:8000"
+    REGION: "eu-west-1"
+    TABLE: "Equipment"
+
+package:
+  artifact: 'target/${self:service}-${self:provider.stage}.jar'
+
+plugins:
+  - serverless-plugin-stage-variables
+  - serverless-sam
+
+exclude:
+  - .gitignore
+  - .log
+  - README.md
+
+functions:
+  getEquipment:
+    handler: com.serverless.handler.GetEquipmentHandler
+    timeout: 30
+    events:
+      - http:
+          path: /equipment/{id}
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    EquipmentTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Equipment
+        AttributeDefinitions:
+          - AttributeName: EquipmentNumber
+            AttributeType: S
+        KeySchema:
+          - AttributeName: EquipmentNumber
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    ApiGatewayStage:
+      Type: AWS::ApiGateway::Stage
+      Properties:
+        MethodSettings:
+          - DataTraceEnabled: true
+            HttpMethod: "*"
+            LoggingLevel: INFO
+            ResourcePath: "/*"
+            MetricsEnabled: true
