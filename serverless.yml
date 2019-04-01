@@ -32,6 +32,7 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   tableName: Equipment-${self:custom.stage}
   client:
+    distributionFolder: client/build
     bucketName: arttu-serverless-equipment-app
 
 functions:

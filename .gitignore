@@ -2,6 +2,8 @@
 target
 /bin/
 /.settings/
+client/build
+client/node_modules
 .project
 .classpath
 .idea
