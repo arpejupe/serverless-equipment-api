@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class GetEquipmentHandler implements RequestHandler<Map<String, Object>, ApiGatewayResponse> {
 
-    static final Logger logger = LogManager.getLogger(Equipment.class);
+    static final Logger logger = LogManager.getLogger(GetEquipmentHandler.class);
 
     @Override
     public ApiGatewayResponse handleRequest(Map<String, Object> input, Context context) {
@@ -27,8 +27,8 @@ public class GetEquipmentHandler implements RequestHandler<Map<String, Object>, 
             equipment = dynamoDB.getEquipment(equipmentNumber);
             logger.info("Equipment fetched with id " + equipment.getEquipmentNumber());
         } catch (Exception e) {
-            logger.error(e, e);
-            Response responseBody = new Response("Failure getting equipment", input);
+            logger.error(e);
+            Response responseBody = new Response("API failed fetching the equipment", input);
             return ApiGatewayResponse.builder()
                     .setStatusCode(500)
                     .setObjectBody(responseBody)

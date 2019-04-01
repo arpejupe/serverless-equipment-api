@@ -5,16 +5,16 @@ provider:
   runtime: java8
   stage: dev
   region: eu-west-1
-  deploymentBucket: arttu-serverless-equipment-api
+  deploymentBucket:
+    Ref: ServerlessEquipmentAPIBucket
   iamRoleStatements:
     - Effect: "Allow"
       Action:
       - "dynamodb:*"
       Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/*"
   environment:
-    ENDPOINT: "http://localhost:8000"
     REGION: "eu-west-1"
-    TABLE: "Equipment"
+    TABLE: ${self:custom.tableName}
 
 package:
   artifact: 'target/${self:service}-${self:provider.stage}.jar'
@@ -22,11 +22,17 @@ package:
 plugins:
   - serverless-plugin-stage-variables
   - serverless-sam
-
+  - serverless-finch
 exclude:
   - .gitignore
   - .log
-  - README.md
+  - .md
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  tableName: Equipment-${self:custom.stage}
+  client:
+    bucketName: arttu-serverless-equipment-app
 
 functions:
   getEquipment:
@@ -37,13 +43,28 @@ functions:
           path: /equipment/{id}
           method: get
           cors: true
+  getEquipmentList:
+    handler: com.serverless.handler.GetEquipmentListHandler
+    timeout: 30
+    events:
+      - http:
+          path: /equipment
+          method: get
+  postEquipment:
+    handler: com.serverless.handler.PostEquipmentHandler
+    timeout: 30
+    events:
+      - http:
+          path: /equipment
+          method: post
+          cors: true
 
 resources:
   Resources:
     EquipmentTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: Equipment
+        TableName: ${self:custom.tableName}
         AttributeDefinitions:
           - AttributeName: EquipmentNumber
             AttributeType: S
@@ -62,3 +83,29 @@ resources:
             LoggingLevel: INFO
             ResourcePath: "/*"
             MetricsEnabled: true
+    ServerlessEquipmentAPIBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: arttu-serverless-equipment-api
+        AccessControl: Private
+        VersioningConfiguration:
+          Status: "Enabled"
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: True
+          BlockPublicPolicy: True
+          IgnorePublicAcls: True
+          RestrictPublicBuckets: True
+    ServerlessEquipmentAppBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: arttu-serverless-equipment-app
+        AccessControl: PublicRead
+        WebsiteConfiguration:
+          IndexDocument: index.html
+        VersioningConfiguration:
+          Status: "Enabled"
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: False
+          BlockPublicPolicy: False
+          IgnorePublicAcls: False
+          RestrictPublicBuckets: False

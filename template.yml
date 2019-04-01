@@ -5,7 +5,7 @@ Resources:
   EquipmentTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
-      TableName: Equipment
+      TableName: Equipment-dev
       AttributeDefinitions:
         - AttributeName: EquipmentNumber
           AttributeType: S
@@ -24,6 +24,32 @@ Resources:
           LoggingLevel: INFO
           ResourcePath: /*
           MetricsEnabled: true
+  ServerlessEquipmentAPIBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: arttu-serverless-equipment-api
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+  ServerlessEquipmentAppBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: arttu-serverless-equipment-app
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
   GetEquipment:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -41,9 +67,8 @@ Resources:
               Resource: 'arn:aws:dynamodb:eu-west-1:*:table/*'
       Environment:
         Variables:
-          ENDPOINT: 'http://localhost:8000'
           REGION: eu-west-1
-          TABLE: Equipment
+          TABLE: Equipment-dev
       Events:
         Event1:
           Type: Api
@@ -111,6 +136,80 @@ Resources:
                       type: string
                     Access-Control-Allow-Origin:
                       type: string
+          /equipment:
+            options:
+              x-amazon-apigateway-integration:
+                type: mock
+                requestTemplates:
+                  application/json: '{ "statusCode" : 200 }'
+                responses:
+                  default:
+                    statusCode: 200
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+                      method.response.header.Access-Control-Allow-Methods: '''options,get,post'''
+                      method.response.header.Access-Control-Allow-Origin: '''*'''
+                    responseTemplates:
+                      application/json: '{}'
+              responses:
+                '200':
+                  headers:
+                    Access-Control-Allow-Headers:
+                      type: string
+                    Access-Control-Allow-Methods:
+                      type: string
+                    Access-Control-Allow-Origin:
+                      type: string
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  'Fn::Sub': >-
+                    arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetEquipmentList.Arn}/invocations
+                responses:
+                  default:
+                    statusCode: 200
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+                      method.response.header.Access-Control-Allow-Methods: '''get'''
+                      method.response.header.Access-Control-Allow-Origin: '''*'''
+                    responseTemplates:
+                      application/json: '{}'
+              responses:
+                '200':
+                  headers:
+                    Access-Control-Allow-Headers:
+                      type: string
+                    Access-Control-Allow-Methods:
+                      type: string
+                    Access-Control-Allow-Origin:
+                      type: string
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  'Fn::Sub': >-
+                    arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostEquipment.Arn}/invocations
+                responses:
+                  default:
+                    statusCode: 200
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+                      method.response.header.Access-Control-Allow-Methods: '''options,get,post'''
+                      method.response.header.Access-Control-Allow-Origin: '''*'''
+                    responseTemplates:
+                      application/json: '{}'
+              responses:
+                '200':
+                  headers:
+                    Access-Control-Allow-Headers:
+                      type: string
+                    Access-Control-Allow-Methods:
+                      type: string
+                    Access-Control-Allow-Origin:
+                      type: string
   GetEquipmentLambdaPermission:
     Type: 'AWS::Lambda::Permission'
     DependsOn:
@@ -119,4 +218,76 @@ Resources:
       Action: 'lambda:InvokeFunction'
       FunctionName:
         Ref: GetEquipment
+      Principal: apigateway.amazonaws.com
+  GetEquipmentList:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: com.serverless.handler.GetEquipmentListHandler
+      Runtime: java8
+      CodeUri: target/serverless-equipment-api-dev.jar
+      MemorySize: 128
+      Timeout: 30
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'dynamodb:*'
+              Resource: 'arn:aws:dynamodb:eu-west-1:*:table/*'
+      Environment:
+        Variables:
+          REGION: eu-west-1
+          TABLE: Equipment-dev
+      Events:
+        Event1:
+          Type: Api
+          Properties:
+            Path: /equipment
+            Method: get
+            RestApiId:
+              Ref: ServerlessEquipmentApi
+  GetEquipmentListLambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    DependsOn:
+      - GetEquipmentList
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: GetEquipmentList
+      Principal: apigateway.amazonaws.com
+  PostEquipment:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: com.serverless.handler.PostEquipmentHandler
+      Runtime: java8
+      CodeUri: target/serverless-equipment-api-dev.jar
+      MemorySize: 128
+      Timeout: 30
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'dynamodb:*'
+              Resource: 'arn:aws:dynamodb:eu-west-1:*:table/*'
+      Environment:
+        Variables:
+          REGION: eu-west-1
+          TABLE: Equipment-dev
+      Events:
+        Event1:
+          Type: Api
+          Properties:
+            Path: /equipment
+            Method: post
+            RestApiId:
+              Ref: ServerlessEquipmentApi
+  PostEquipmentLambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    DependsOn:
+      - PostEquipment
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: PostEquipment
       Principal: apigateway.amazonaws.com
