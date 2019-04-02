@@ -10,8 +10,18 @@ Set of tools and applications to demonstrate rapid development of serverless IoT
 
 ### Features
 * Fetch Equipment by EquipmentNumber
+    * Implemented by using DynamoDB hash key based load. Query is another way to go and would be the choice if we would
+    example like to condition the results with range. 
 * Fetch List of Equipment with pagination
+    * Implemented by using DynamoDB Scan with limit and exclusiveStartKey. 
+    For this demo a custom iterator was used for scan since DynamoDB scan limit is not really 
+    limiting the results. Scan returns a PaginatedList, which lazily loads more results 
+    from DynamoDB as necessary. Better solution for limiting and pagination results would using queries
+    with sort keys.
 * Create Equipment Item
+    * Implemented by using DynamoDB save that maps directly to class properties. 
+    DynamoDB save expression can be defined to prevent saving of duplicate items based on hash key automatically so that 
+    there is no need to make custom validation implementation.
 
 
 Instructions
