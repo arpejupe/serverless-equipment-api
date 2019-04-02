@@ -4,9 +4,9 @@ Set of tools and applications to demonstrate rapid development of serverless IoT
 
 **Solution Overview:** [Solution Diagram](https://s3-eu-west-1.amazonaws.com/arttu-serverless-equipment-app/Serverless-API.png)
 
-**API Documentation:** [https://d2tbrnc2i93irp.cloudfront.net/api](https://d2tbrnc2i93irp.cloudfront.net/)
+**API Documentation:** [https://d2tbrnc2i93irp.cloudfront.net/api](https://d2tbrnc2i93irp.cloudfront.net/api)
 
-**Demo Application:** [https://d2tbrnc2i93irp.cloudfront.net/app](https://d2tbrnc2i93irp.cloudfront.net/)
+**Demo Application:** [https://d2tbrnc2i93irp.cloudfront.net/app](https://d2tbrnc2i93irp.cloudfront.net/app)
 
 ### Features
 * Fetch Equipment by EquipmentNumber
