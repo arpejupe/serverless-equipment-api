@@ -2,30 +2,42 @@ package com.serverless.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.serverless.ApiGatewayResponse;
-import com.serverless.Response;
-import com.serverless.dao.EquipmentDao;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.serverless.dao.Dao;
+import com.serverless.util.EquipmentInjector;
+import com.serverless.util.HandlerUtil;
+import com.serverless.api.ApiGatewayResponse;
+import com.serverless.api.Response;
 import com.serverless.model.Equipment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.Map;
+import java.util.List;
 
 public class GetEquipmentListHandler implements RequestHandler<Map<String, Object>, ApiGatewayResponse> {
 
     static final Logger logger = LogManager.getLogger(GetEquipmentListHandler.class);
 
+    Injector injector = Guice.createInjector(new EquipmentInjector());
+    Dao dao = injector.getInstance(Dao.class);
+
     @Override
     public ApiGatewayResponse handleRequest(Map<String, Object> input, Context context) {
-        logger.info("Handler received request: " + input);
+        logger.info("GetEquipmentListHandler received request: " + input);
         List<Equipment> equipmentList;
         try {
-            this.validateInputParameters(input);
+            HandlerUtil.validateInputParameters(input);
             Map<String, String> queryStringParameters = (Map<String, String>) input.get("queryStringParameters");
             Integer limit = Integer.parseInt(queryStringParameters.get("limit"));
             String lastEvaluatedKey = queryStringParameters.get("offset");
-            EquipmentDao dynamoDB = new EquipmentDao();
-            equipmentList = dynamoDB.getEquipmentList(limit, lastEvaluatedKey);
+            equipmentList = dao.getEquipmentList(limit, lastEvaluatedKey);
+            return ApiGatewayResponse.builder()
+                    .setStatusCode(200)
+                    .setObjectBody(equipmentList)
+                    .setHeaders(HandlerUtil.createCORSHeaders())
+                    .build();
         }
         catch (IllegalArgumentException e) {
             logger.error(e);
@@ -33,7 +45,7 @@ public class GetEquipmentListHandler implements RequestHandler<Map<String, Objec
             return ApiGatewayResponse.builder()
                     .setStatusCode(500)
                     .setObjectBody(responseBody)
-                    .setHeaders(createCORSHeaders())
+                    .setHeaders(HandlerUtil.createCORSHeaders())
                     .build();
         }
         catch (Exception e) {
@@ -42,30 +54,9 @@ public class GetEquipmentListHandler implements RequestHandler<Map<String, Objec
             return ApiGatewayResponse.builder()
                     .setStatusCode(500)
                     .setObjectBody(responseBody)
-                    .setHeaders(createCORSHeaders())
+                    .setHeaders(HandlerUtil.createCORSHeaders())
                     .build();
         }
-        return ApiGatewayResponse.builder()
-                .setStatusCode(200)
-                .setObjectBody(equipmentList)
-                .setHeaders(createCORSHeaders())
-                .build();
     }
-
-    //TODO: Proper input parameter validation for all handlers
-    private void validateInputParameters(Map<String, Object> input) {
-        if(input.get("queryStringParameters") == null) {
-            throw new IllegalArgumentException("Query string paramters missing. You need to provide at least limit parameter");
-        }
-    }
-
-    private Map<String, String> createCORSHeaders() {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Access-Control-Allow-Origin", "*");
-        headers.put("Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token");
-        return headers;
-    }
-
-
 
 }

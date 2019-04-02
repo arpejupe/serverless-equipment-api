@@ -6,8 +6,25 @@ const LIMIT = 2;
 
 class EquipmentTable extends Component {
 
+    constructor() {
+        super();
+        this.state = {
+            isLoading: false
+        };
+    }
+
     componentWillMount() {
         this.props.getEquipmentList(LIMIT);
+        if (this.props.equipment  === undefined || this.props.equipment.length == 0) {
+            this.state.isLoading = true;
+        }
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if (nextProps.equipment.length > 0) {
+            this.state.isLoading = false;
+        }
+        return true;
     }
 
     getMoreEquipment() {
@@ -27,7 +44,14 @@ class EquipmentTable extends Component {
         );
     }
 
+    renderLoading() {
+        return (
+            <tr align="center"><td colspan="5"><i>Loading Equipment ...</i></td></tr>
+        )
+    }
+
     render() {
+        const isLoading = this.state.isLoading;
         return (
             <div>
                 <table className="table">
@@ -41,7 +65,7 @@ class EquipmentTable extends Component {
                     </tr>
                     </thead>
                     <tbody>
-                        {this.props.equipment.map(this.renderEquipment)}
+                        {isLoading ? this.renderLoading() : this.props.equipment.map(this.renderEquipment)}
                     </tbody>
                 </table>
                 <div>

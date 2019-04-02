@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux'
 import EquipmentTable from './equipment_table';
 import '../style/App.css';
-import { getEquipmentList } from "../actions";
 import SwaggerUI from "./swagger";
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Route } from "react-router-dom";
 
 export default class App extends Component {
 

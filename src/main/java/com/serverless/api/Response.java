@@ -1,4 +1,4 @@
-package com.serverless;
+package com.serverless.api;
 
 import java.util.Map;
 

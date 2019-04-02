@@ -1,15 +1,21 @@
 Serverless Equipment API
 =================================
-Demo application for IoT projects. Provisions and scales automatically. Can be easily exported into CI/CD pipeline.
+Set of tools and applications to demonstrate rapid development of serverless IoT projects. Provisions and scales automatically to cloud. Can be easily exported into CI/CD pipeline.
 
+**Solution Overview:** [Solution Diagram](https://s3-eu-west-1.amazonaws.com/arttu-serverless-equipment-app/Serverless-API.png)
+
+**API Documentation:** [https://d2tbrnc2i93irp.cloudfront.net/api](https://d2tbrnc2i93irp.cloudfront.net/)
+
+**Demo Application:** [https://d2tbrnc2i93irp.cloudfront.net/app](https://d2tbrnc2i93irp.cloudfront.net/)
 
 ### Features
 * Fetch Equipment by EquipmentNumber
-* Fetch List of Equipment
+* Fetch List of Equipment with pagination
 * Create Equipment Item
 
 
-##Instructions
+Instructions
+=================================
 ### Pre-Requisites
 * [AWS CLI configured](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) for local development
 * [Node](https://nodejs.org/en/download/)  for running serverless
@@ -17,6 +23,8 @@ Demo application for IoT projects. Provisions and scales automatically. Can be e
 * JDK version 8.x or newer
 * [Maven](https://maven.apache.org/) for building the Java app
 * [Docker]() for local development
+* [React]() for client app
+* [Swagger]() for API Documentation (generated with AWS API Gateway)
 
 ### Installed Plugins for serverless
 * [serverless-plugin-stage-variables]() For enabling Cloudwatch logging automatically
@@ -39,7 +47,7 @@ You can specify stages in yml template or by deploying with `--stage` flag
 Instead of deploying to the cloud, you can deploy application locally in docker containers and test lambdas in your local 
 environment.
 
-1) Set up docker. In order to make containers link to each other, create dynamodb container using specified network and attach it to SAM with --docker
+1) Set up docker. In order to make containers link to each other, create dynamodb container using specified network and attach it to SAM with `--docker-network` tag (explained later)
 
     ```
     docker run --network serverless-equipment-api-local \
@@ -64,7 +72,7 @@ environment.
     '{"EquipmentNumber": {"S": "D435"}, "Address": {"S": "Test"},"ContractStartDate":{"S": "2010-05-30 22:15:51"},"ContractEndDate": {"S": "2010-05-30 22:15:52"},"Status":{"S":"STOPPED"}}'
     ```
 
-4) You can invoke single function with serverless invoke:
+4) You can test single function with serverless invoke:
     ```
     serverless invoke local --function getEquipment --data '{"pathParameters": {"id": "1"}}'`
     ```
@@ -78,6 +86,12 @@ environment.
     ```
     sam local start-api --docker-network serverless-equipment-api-local
     ```
+    
+### Running and deploying the client app
+
+1) Run locally:  ```npm run install && npm run start```
+
+2) To build and deploy to cloud: ```npm run build && serverless client deploy```
 
 ## License
 This project is licensed under the MIT license, Copyright (c) 2019 Arttu Pekkarinen. For more information see `LICENSE.md`
