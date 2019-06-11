@@ -28,7 +28,7 @@ SwaggerUI.propTypes = {
 };
 
 SwaggerUI.defaultProps = {
-    url: `https://s3-eu-west-1.amazonaws.com/arttu-serverless-equipment-app/dev-serverless-equipment-api-dev-swagger.json`
+    url: `https://s3-eu-west-1.amazonaws.com/arttu-serverless-equipment-app-test/test-serverless-equipment-api-test-swagger.json`
 };
 
 export default SwaggerUI;

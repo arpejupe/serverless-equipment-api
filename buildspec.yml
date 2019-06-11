@@ -1,0 +1,36 @@
+version: 0.2
+# Declaration of environment variables
+environment_variables:
+ plaintext:
+  STAGE: "test"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+    commands:
+      - echo Launching installation with stage $STAGE
+      - echo Installing required packages for serverless...
+      - npm --prefix ./client install ./client
+      - npm install -g serverless
+      - npm install serverless-plugin-stage-variables serverless-sam serverless-finch
+  pre_build:
+    commands:
+      - echo Tests started on `date`
+      - mvn test
+  build:
+    commands:
+      - echo API build started on `date`
+      - mvn versions:set -DnewVersion=$STAGE -DgenerateBackupPoms=false
+      - mvn clean package
+      - echo Client build started `date`
+      - cd client
+      - npm run build
+      - cd ..
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Deploying the API to the cloud...
+      - sls deploy --stage=$STAGE
+      - echo Deploying the client to the cloud...
+      - serverless client deploy --no-confirm

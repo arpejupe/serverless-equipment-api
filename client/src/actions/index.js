@@ -3,7 +3,7 @@ import {
     GET_EQUIPMENTLIST
 } from './types';
 
-const EQUIPMENT_API_URL = `https://xw4ftmq75k.execute-api.eu-west-1.amazonaws.com/dev/equipment`;
+const EQUIPMENT_API_URL = `https://rxd5rgoryh.execute-api.eu-west-1.amazonaws.com/test/equipment`;
 
 export function getEquipmentList(limit, offset) {
     var endpoint;
