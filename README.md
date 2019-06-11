@@ -104,5 +104,11 @@ environment.
 2) To build and deploy to cloud: ```npm run build && serverless client deploy```
 
 Build is located in build folder which is used as a source folder for serverless deploy of the client application. After runnng client deploy the static bundles are uploaded to S3 bucket which is used as origin of AWS CloudFront distribution.
+
+
+### Deploying with AWS CodePipeline
+Use ```buildspec.yml``` to make automated builds in AWS CodeBuild. Use CodePipeline to build a CI&CD pipeline from the repository source and cloudformation stack from build output.
+
+
 ## License
 This project is licensed under the MIT license, Copyright (c) 2019 Arttu Pekkarinen. For more information see `LICENSE.md`

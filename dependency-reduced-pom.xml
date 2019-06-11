@@ -4,7 +4,7 @@
   <groupId>com.serverless</groupId>
   <artifactId>serverless-equipment-api</artifactId>
   <name>serverless-equipment-api</name>
-  <version>dev</version>
+  <version>test</version>
   <build>
     <plugins>
       <plugin>

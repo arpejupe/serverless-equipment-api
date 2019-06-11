@@ -3,7 +3,7 @@ service: serverless-equipment-api
 provider:
   name: aws
   runtime: java8
-  stage: dev
+  stage: ${opt:stage, 'dev'}
   region: eu-west-1
   deploymentBucket:
     Ref: ServerlessEquipmentAPIBucket
@@ -17,6 +17,7 @@ provider:
     TABLE: ${self:custom.tableName}
 
 package:
+  excludeDevDependencies: false
   artifact: 'target/${self:service}-${self:provider.stage}.jar'
 
 plugins:
@@ -29,11 +30,13 @@ exclude:
   - .md
 
 custom:
-  stage: ${opt:stage, self:provider.stage}
+  stage: ${self:provider.stage}
   tableName: Equipment-${self:custom.stage}
+  APIBucketName: arttu-serverless-equipment-api-${self:custom.stage}
+  AppBucketName: arttu-serverless-equipment-app-${self:custom.stage}
   client:
     distributionFolder: client/build
-    bucketName: arttu-serverless-equipment-app
+    bucketName: arttu-serverless-equipment-app-test
 
 functions:
   getEquipment:
@@ -87,7 +90,7 @@ resources:
     ServerlessEquipmentAPIBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: arttu-serverless-equipment-api
+        BucketName: ${self:custom.APIBucketName}
         AccessControl: Private
         VersioningConfiguration:
           Status: "Enabled"
@@ -99,7 +102,7 @@ resources:
     ServerlessEquipmentAppBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: arttu-serverless-equipment-app
+        BucketName: ${self:custom.AppBucketName}
         AccessControl: PublicRead
         WebsiteConfiguration:
           IndexDocument: index.html
