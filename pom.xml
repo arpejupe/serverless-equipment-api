@@ -4,13 +4,14 @@
   <groupId>com.serverless</groupId>
   <artifactId>serverless-equipment-api</artifactId>
   <packaging>jar</packaging>
-  <version>dev</version>
+  <version>${stage}</version>
   <name>serverless-equipment-api</name>
 
   <properties>
 	<maven.compiler.source>1.8</maven.compiler.source>
 	<maven.compiler.target>1.8</maven.compiler.target>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<stage>dev</stage>
   </properties>
 
   <dependencies>
